@@ -37,7 +37,8 @@ def kappa_main(inputString):
         print(a)
         kappa = data/a
         print(f"Kappa for f(x) = x - {c}: {kappa}")
-        return f"Kappa for f(x) = x - {c}: {kappa}"
+        output = f"{a}\nKappa for f(x) = x - {c}: {kappa}"
+        return output
     except ValueError:
         print("error! make sure c and x are number。")
         return "error! make sure c and x are number。"

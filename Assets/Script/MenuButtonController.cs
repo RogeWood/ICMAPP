@@ -20,22 +20,31 @@ public class MenuButtonController : MonoBehaviour
 	[SerializeField] private TMP_InputField qrfactorInputField;
 	[SerializeField] private TMP_InputField minimizeInputField1;
 	[SerializeField] private TMP_InputField minimizeInputField2;
+	[SerializeField] private TMP_InputField fixedIterationInputField;
+	[SerializeField] private TMP_InputField fixedSolveInputField;
+	[SerializeField] private TMP_InputField secentMethodInputField1;
+	[SerializeField] private TMP_InputField secentMethodInputField2;
 
 
 	[Header("TMP")]
 	[SerializeField] private TextMeshProUGUI kappaOutTMP;
 	[SerializeField] private TextMeshProUGUI qrfactorOutTMP;
 	[SerializeField] private TextMeshProUGUI minimizeOutTMP;
-
+	[SerializeField] private TextMeshProUGUI fixedSolveOutTMP;
+	[SerializeField] private TextMeshProUGUI secentMethodOutTMP;
+	
 	[Header("script")]
     [SerializeField] private PythonCodeIOManager pythonCodeIOManager;
 
+	[Header("image")]
+	[SerializeField] private Image fixedIterationOutImage;
+	//[SerializeField] private PythonCodeIOManager pythonCodeIOManager;
 	// Start is called before the first frame update
 	void Start()
     {
         currentPageIndex = 0;
-        //pagePanel.SetActive(false);
-    }
+        pagePanel.SetActive(false);
+	}
 
     // Update is called once per frame
     void Update()
@@ -63,12 +72,13 @@ public class MenuButtonController : MonoBehaviour
 
     public void OnClickNextPage(int i)
     {
-        UpdatePages(currentPageIndex+i);
+        UpdatePages(currentPageIndex + i);
     }
 
     private void UpdatePages(int pageIndex)
     {
 		if (pageIndex >= pages.Length || pageIndex < 0) return;
+        currentPageIndex = pageIndex;
 
 
         foreach (var page in pages)
@@ -82,7 +92,6 @@ public class MenuButtonController : MonoBehaviour
         }
 
         pages[pageIndex].SetActive(true);
-        currentPageIndex = pageIndex;
     }
 
 	public void OnClickEnterKappa()
@@ -95,14 +104,30 @@ public class MenuButtonController : MonoBehaviour
 	{
         StartCoroutine(pythonCodeIOManager.GetPythonData("qrfactor", qrfactorInputField.text, qrfactorOutTMP));
 	}
-
 	public void OnClickEnterMinimize()
 	{
 		string inputValue = minimizeInputField1.text + "|" + minimizeInputField2.text;
 		StartCoroutine(pythonCodeIOManager.GetPythonData("minimize", inputValue, minimizeOutTMP));
-		//qrfactorOutTMP.text = "Output:  " + pythonCodeIOManager.outputString;
-		//Debug.Log(outputString);
 	}
+
+	public void OnClickEnterFixedSolve()
+	{
+		StartCoroutine(pythonCodeIOManager.GetPythonData("fixedSolve", fixedSolveInputField.text, fixedSolveOutTMP));
+	}
+
+	public void OnClickEnterFixedIteration()
+	{
+		StartCoroutine(pythonCodeIOManager.GetPythonImage("fixedIteration", fixedIterationInputField.text, fixedIterationOutImage));
+	}
+
+	public void OnClickEnterSecentMethod()
+	{
+
+		string inputValue = secentMethodInputField1.text + "|" + secentMethodInputField2.text;
+		StartCoroutine(pythonCodeIOManager.GetPythonData("secentMethod", inputValue, secentMethodOutTMP));
+	}
+
+	
 
 	public void OnClickExit()
     {

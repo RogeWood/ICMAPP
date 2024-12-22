@@ -81,7 +81,7 @@ def fixed_iteration_main(inputString):
         # Show the plot
         plt.savefig("fixed_point_iterations.png")
         print("\nFixed point iterations saved as 'fixed_point_iterations.png'.")
-        plt.show()
+        # plt.show()
 
     except ValueError as e:
         print(f"\nError: {e}")
