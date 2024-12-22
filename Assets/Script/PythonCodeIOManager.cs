@@ -1,57 +1,70 @@
-using System.Diagnostics;
-using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using static System.Net.WebRequestMethods;
+using TMPro;
 
 public class PythonCodeIOManager : MonoBehaviour
 {
-	public string pythonPath = "python"; // Python 可執行檔的路徑
-	public string scriptPath = "path/to/save_image.py"; // Python 腳本的路徑
-	public Renderer targetRenderer; // 用於顯示圖片的 Renderer (例如 Quad 上的材質)
+	//[SerializeField] private string pythonPath = "C:\\Users\\user\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe"; // Python 可執行檔的路徑
+	[SerializeField] private string scriptPath = "path/to/save_image.py"; // Python 腳本的路徑
+	[SerializeField] private string pythonServerUrl = "http://localhost:5000/";
+	//"http://localhost:5000/run_python_code"
+	//http://localhost:5000/code1_kappa?input_string=hello
+
+	//[SerializeField] private string outputTxtPath = "Assets/pythonCode/output.txt";
+	//[SerializeField] private string inputTxtPath = "Assets/pythonCode/input.txt";
+
+	public string outputString;
 
 	void Start()
 	{
-		string imagePath = RunPythonScriptAndGetImagePath();
-		if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
-		{
-			LoadImageToTexture(imagePath);
-		}
-		else
-		{
-			UnityEngine.Debug.LogError("Image file not found: " + imagePath);
-		}
+		StartCoroutine(TestPythonServer());
 	}
 
-	string RunPythonScriptAndGetImagePath()
-	{
-		ProcessStartInfo start = new ProcessStartInfo();
-		start.FileName = pythonPath;
-		start.Arguments = scriptPath;
-		start.UseShellExecute = false;
-		start.RedirectStandardOutput = true;
-		start.RedirectStandardError = true;
-		start.CreateNoWindow = true;
 
-		using (Process process = Process.Start(start))
+	IEnumerator TestPythonServer()
+	{
+		using (UnityWebRequest webRequest = UnityWebRequest.Get(pythonServerUrl + "/run_python_code"))
 		{
-			using (StreamReader reader = process.StandardOutput)
+			// Send the request and wait for a response
+			yield return webRequest.SendWebRequest();
+
+			if (webRequest.result == UnityWebRequest.Result.Success)
 			{
-				string output = reader.ReadToEnd().Trim();
-				UnityEngine.Debug.Log("Python Output: " + output);
-				return output; // 返回 Python 輸出的圖片路徑
+				// Successfully received response from Python server
+				Debug.Log("Received from Python: " + webRequest.downloadHandler.text);
+				//outputString = webRequest.downloadHandler.text;
+			}
+			else
+			{
+				// Error occurred
+				Debug.LogError("Error: " + webRequest.error);
 			}
 		}
 	}
 
-	void LoadImageToTexture(string imagePath)
+	public IEnumerator GetPythonData(string api, string inputString, TextMeshProUGUI tmp)
 	{
-		byte[] imageData = File.ReadAllBytes(imagePath);
-		Texture2D texture = new Texture2D(2, 2);
-		texture.LoadImage(imageData);
-
-		// 將圖片應用到指定的材質
-		if (targetRenderer != null)
+		string url = pythonServerUrl + api + "?input_string=" + inputString;
+		Debug.Log(url);
+		using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
 		{
-			targetRenderer.material.mainTexture = texture;
+			// Send the request and wait for a response
+			yield return webRequest.SendWebRequest();
+
+			if (webRequest.result == UnityWebRequest.Result.Success)
+			{
+				// Successfully received response from Python server
+				Debug.Log("Received from Python: " + webRequest.downloadHandler.text);
+				outputString = webRequest.downloadHandler.text;
+				tmp.text = "Output:  " + outputString;
+			}
+			else
+			{
+				// Error occurred
+				Debug.LogError("Error: " + webRequest.error);
+			}
 		}
 	}
 }

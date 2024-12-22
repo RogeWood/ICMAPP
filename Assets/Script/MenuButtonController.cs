@@ -17,13 +17,24 @@ public class MenuButtonController : MonoBehaviour
 
 	[Header("input field")]
 	[SerializeField] private TMP_InputField kappaInputField;
+	[SerializeField] private TMP_InputField qrfactorInputField;
+	[SerializeField] private TMP_InputField minimizeInputField1;
+	[SerializeField] private TMP_InputField minimizeInputField2;
 
+
+	[Header("TMP")]
+	[SerializeField] private TextMeshProUGUI kappaOutTMP;
+	[SerializeField] private TextMeshProUGUI qrfactorOutTMP;
+	[SerializeField] private TextMeshProUGUI minimizeOutTMP;
+
+	[Header("script")]
+    [SerializeField] private PythonCodeIOManager pythonCodeIOManager;
 
 	// Start is called before the first frame update
 	void Start()
     {
         currentPageIndex = 0;
-        pagePanel.SetActive(false);
+        //pagePanel.SetActive(false);
     }
 
     // Update is called once per frame
@@ -50,13 +61,16 @@ public class MenuButtonController : MonoBehaviour
         pagePanel.SetActive(false);
     }
 
-    public void OnClickNextPage()
+    public void OnClickNextPage(int i)
     {
-        UpdatePages(currentPageIndex+1);
+        UpdatePages(currentPageIndex+i);
     }
 
     private void UpdatePages(int pageIndex)
     {
+		if (pageIndex >= pages.Length || pageIndex < 0) return;
+
+
         foreach (var page in pages)
         {
             if(page) page.SetActive(false);
@@ -73,11 +87,29 @@ public class MenuButtonController : MonoBehaviour
 
 	public void OnClickEnterKappa()
     {
-        string inputValue = kappaInputField.text;
-        Debug.Log(inputValue);
-    }
+        StartCoroutine(pythonCodeIOManager.GetPythonData("kappa", kappaInputField.text, kappaOutTMP));
 
-	private int GetIndexFromName(string name)
+	}
+
+	public void OnClickEnterQRfactor()
+	{
+        StartCoroutine(pythonCodeIOManager.GetPythonData("qrfactor", qrfactorInputField.text, qrfactorOutTMP));
+	}
+
+	public void OnClickEnterMinimize()
+	{
+		string inputValue = minimizeInputField1.text + "|" + minimizeInputField2.text;
+		StartCoroutine(pythonCodeIOManager.GetPythonData("minimize", inputValue, minimizeOutTMP));
+		//qrfactorOutTMP.text = "Output:  " + pythonCodeIOManager.outputString;
+		//Debug.Log(outputString);
+	}
+
+	public void OnClickExit()
+    {
+		Application.Quit();
+	}
+
+    private int GetIndexFromName(string name)
 	{
 		int startIndex = name.IndexOf('(');
 		int endIndex = name.IndexOf(')');
@@ -92,10 +124,5 @@ public class MenuButtonController : MonoBehaviour
 		}
 
 		return -1;
-	}
-
-    public void OnClickExit()
-    {
-		Application.Quit();
 	}
 }
